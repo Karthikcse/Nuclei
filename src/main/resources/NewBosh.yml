@@ -1,0 +1,78 @@
+---
+name: bosh
+director_uuid: 34h45-34hbjn-343jh-mnbj34
+
+cloud:
+   UID: admin
+   plugin: aws
+   PSW: admin
+   BOSH v: 2.1
+   director_uuid: 34h45-34hbjn-343jh-mnbj34
+   proporties: 
+    aws :
+     access_key_id: AKGDFIUYGD
+     secret_access_key: LHGUGF
+     region: is-west-2
+     default_key_name: BOSH_KeyPair
+     c2_private_key: ~./ssh/BOSH_KeyPair.pem
+   target: 196.1.3.4
+
+compilation:
+   reuse_compilation_vms: true
+   cloud_properties: 
+     instance_type: m1.medium
+     availability_zone: us-west-2a
+   workers: 1
+   network: cf1
+
+release:
+ - name: bosh
+   version: latest
+   uuid: 5s77d88
+ - URL: https://cf.com/mysql
+
+jobs:
+   template: mysql
+   instances: 1
+   persistent_disk: 10240
+   name: mysql
+   resource_pool: common
+   networks: 
+     name: default
+     default: [dns]
+     name: elastic
+     static_ips: -52.25.60.146
+   properties: 
+     admin_password: root
+     admin_username: root
+     max_connections: 1500
+     port: 3306
+     cluster_ips: 52.25.60.146
+
+update:
+   update_watch_time: 30000-180000
+   canaries: 1
+   canary_watch_time: 30000-180000
+   max_in_flight: 4
+
+resource_pools:
+ - size: 1
+   name: common
+   stemcell: 
+     name: bosh-xen-ubuntu-trusty-go_agent
+     version: 2976
+   cloud_properties: 
+     instance_type: m1.medium
+     availability_zone: us-east-2a
+     key_name: Bosh_KeyPair
+   network: default
+
+networks:
+ - name: elastic
+   cloud_properties: {}
+   type: vip
+ - name: default
+   cloud_properties: 
+     security_group: 
+     -default: 
+   type: dynamic
